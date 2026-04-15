@@ -1,0 +1,152 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/geist";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  
+  --color-background: #f8fafc;
+  --color-foreground: #1e293b;
+  
+  --color-primary: #2563eb;
+  --color-primary-foreground: #ffffff;
+  
+  --color-muted: #f1f5f9;
+  --color-muted-foreground: #64748b;
+  
+  --color-accent: #f1f5f9;
+  --color-accent-foreground: #1e293b;
+  
+  --color-card: #ffffff;
+  --color-card-foreground: #1e293b;
+  
+  --color-border: #e2e8f0;
+  --color-input: #e2e8f0;
+  
+  --radius-lg: 12px;
+  --radius-md: 8px;
+  --radius-sm: 4px;
+}
+
+:root {
+  --bg-body: #f8fafc;
+  --sidebar-bg: #1e293b;
+  --sidebar-hover: #334155;
+  --primary: #2563eb;
+  --primary-light: #dbeafe;
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --success: #10b981;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+.sleek-card {
+  @apply bg-white rounded-[12px] shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1)] p-5;
+}
+
+.sleek-badge {
+  @apply px-2 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wider;
+}
+
+.badge-in { @apply bg-[#dcfce7] text-[#166534]; }
+.badge-out { @apply bg-[#fee2e2] text-[#991b1b]; }
+.badge-low { @apply bg-[#fef3c7] text-[#92400e]; }
+
+/* Print Styles */
+@media print {
+  .no-print, 
+  nav, 
+  header, 
+  button,
+  .fixed,
+  .toaster,
+  [role="status"],
+  .lg\:translate-x-0 {
+    display: none !important;
+  }
+
+  body, html {
+    background-color: white !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Reset layout constraints for printing */
+  .flex.h-screen,
+  .flex-1.flex.flex-col,
+  .overflow-hidden,
+  .overflow-auto,
+  main {
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
+    position: static !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .max-w-7xl {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+
+  .grid {
+    display: grid !important; /* Keep grid for layout but ensure it doesn't break */
+    grid-template-columns: 1fr 1fr !important; /* Force 2 columns for charts if possible */
+    gap: 1rem !important;
+  }
+
+  @page {
+    margin: 1.5cm;
+  }
+
+  .card, .sleek-card {
+    break-inside: avoid;
+    border: 1px solid #e2e8f0 !important;
+    margin-bottom: 1.5rem !important;
+    box-shadow: none !important;
+    padding: 1.5rem !important;
+  }
+
+  h1 {
+    font-size: 20pt !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  .recharts-responsive-container {
+    width: 100% !important;
+    height: 300px !important;
+  }
+
+  .no-print, .recharts-wrapper, .recharts-container {
+    display: none !important;
+  }
+
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  th, td {
+    border: 1px solid #e2e8f0 !important;
+    padding: 8px !important;
+  }
+}
