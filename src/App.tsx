@@ -1,7 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Package, ArrowLeftRight, Settings, Search, Menu, X, FileText, ExternalLink } from "lucide-react";
+import { LayoutDashboard, Package, ArrowLeftRight, Settings, Menu, X, FileText, ExternalLink, LogOut } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { clearToken, getToken } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -11,6 +12,7 @@ import Movements from "./pages/Movements";
 import Reports from "./pages/Reports";
 import ItemDetail from "./pages/ItemDetail";
 import Config from "./pages/Config";
+import Login from "./pages/Login";
 
 function Sidebar() {
   const location = useLocation();
@@ -115,7 +117,7 @@ function Sidebar() {
   );
 }
 
-function Header() {
+function Header({ onLogout }: { onLogout: () => void }) {
   return (
     <header className="h-20 bg-white border-b border-[#e2e8f0] flex items-center justify-between px-8 shrink-0">
       <div className="flex items-center gap-4">
@@ -140,21 +142,43 @@ function Header() {
           <ExternalLink className="h-4 w-4" />
           Abrir em Nova Aba
         </Button>
-        <div className="w-9 h-9 rounded-full bg-[#f1f5f9] flex items-center justify-center text-[#64748b]">
-          <Package className="h-4 w-4" />
-        </div>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="text-[#64748b] hover:bg-[#fee2e2] hover:text-[#ef4444] gap-2"
+          onClick={onLogout}
+        >
+          <LogOut className="h-4 w-4" />
+          Sair
+        </Button>
       </div>
     </header>
   );
 }
 
 export default function App() {
+  const [authed, setAuthed] = useState(() => Boolean(getToken()));
+
+  if (!authed) {
+    return (
+      <>
+        <Login onLogin={() => setAuthed(true)} />
+        <Toaster position="top-right" />
+      </>
+    );
+  }
+
+  const handleLogout = () => {
+    clearToken();
+    setAuthed(false);
+  };
+
   return (
     <Router>
       <div className="flex h-screen bg-[#f8fafc] text-[#1e293b] font-sans overflow-hidden">
         <Sidebar />
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <Header />
+          <Header onLogout={handleLogout} />
           <main className="flex-1 p-8 overflow-auto">
             <div className="max-w-7xl mx-auto">
               <Routes>

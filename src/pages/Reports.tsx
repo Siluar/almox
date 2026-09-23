@@ -1,12 +1,11 @@
 import { useState, useEffect } from "react";
 import { api } from "@/lib/api";
+import { formatDbDate } from "@/lib/datetime";
 import { FileText, TrendingDown, AlertTriangle, Package, Calendar, Download, Search, X, ExternalLink } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
   LineChart, Line, PieChart, Pie, Cell
@@ -82,7 +81,7 @@ export default function Reports() {
       item.min_stock,
       item.total_entries || 0,
       item.total_exits || 0,
-      item.last_movement ? format(new Date(item.last_movement), "dd/MM/yyyy") : "-"
+      item.last_movement ? formatDbDate(item.last_movement, "dd/MM/yyyy") : "-"
     ]);
 
     const csvContent = [
@@ -94,7 +93,7 @@ export default function Reports() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", `relatorio_estoque_${format(new Date(), "dd_MM_yyyy")}.csv`);
+    link.setAttribute("download", `relatorio_estoque_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -342,7 +341,7 @@ export default function Reports() {
                       {item.current_stock} {item.unit}
                     </td>
                     <td className="px-4 py-3 border text-center text-xs text-zinc-500">
-                      {item.last_movement ? format(new Date(item.last_movement), "dd/MM/yy", { locale: ptBR }) : "-"}
+                      {item.last_movement ? formatDbDate(item.last_movement, "dd/MM/yy") : "-"}
                     </td>
                     <td className="px-4 py-3 border text-center">
                       {item.current_stock === 0 ? (

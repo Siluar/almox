@@ -9,8 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowUpRight, ArrowDownRight, Plus, History, Calendar as CalendarIcon, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { cn } from "@/lib/utils";
+import { formatDbDate } from "@/lib/datetime";
+import { Pagination } from "@/components/ui/pagination";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 interface Movement {
@@ -40,6 +41,8 @@ export default function Movements() {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [page, setPage] = useState(1);
+  const pageSize = 15;
 
   const [newMovement, setNewMovement] = useState({
     item_id: "",
@@ -61,6 +64,7 @@ export default function Movements() {
       ]);
       setMovements(movementsData);
       setItems(itemsData);
+      setPage(1);
     } catch (err) {
       toast.error("Erro ao carregar dados");
     } finally {
@@ -96,6 +100,10 @@ export default function Movements() {
       toast.error(err.message || "Erro ao excluir movimentação");
     }
   };
+
+  const totalPages = Math.max(1, Math.ceil(movements.length / pageSize));
+  const safePage = Math.min(page, totalPages);
+  const pagedMovements = movements.slice((safePage - 1) * pageSize, safePage * pageSize);
 
   return (
     <div className="space-y-6">
@@ -207,12 +215,12 @@ export default function Movements() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {movements.map((m) => (
+            {pagedMovements.map((m) => (
               <TableRow key={m.id} className="hover:bg-[#f1f5f9] transition-colors border-b border-[#e2e8f0]">
                 <TableCell className="whitespace-nowrap py-4">
                   <div className="flex items-center gap-2 text-[#64748b] text-[13px]">
                     <CalendarIcon className="h-3 w-3" />
-                    {format(new Date(m.date), "dd/MM HH:mm", { locale: ptBR })}
+                    {formatDbDate(m.date)}
                   </div>
                 </TableCell>
                 <TableCell className="py-4 font-mono text-[12px] text-[#64748b]">
@@ -286,12 +294,9 @@ export default function Movements() {
             )}
           </TableBody>
         </Table>
+        <Pagination page={safePage} pageSize={pageSize} total={movements.length} onPageChange={setPage} />
       </div>
 
     </div>
   );
-}
-
-function cn(...inputs: any[]) {
-  return inputs.filter(Boolean).join(" ");
 }

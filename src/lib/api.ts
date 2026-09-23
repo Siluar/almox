@@ -1,38 +1,81 @@
-export const api = {
-  get: async (url: string) => {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(await res.text());
-    try {
-      return await res.json();
-    } catch (err) {
-      const text = await res.clone().text();
-      console.error(`JSON parse error for ${url}. Response start: ${text.substring(0, 100)}`);
-      throw err;
+const TOKEN_KEY = "almox_token";
+
+export function getToken(): string | null {
+  try {
+    return localStorage.getItem(TOKEN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function clearToken(): void {
+  try {
+    localStorage.removeItem(TOKEN_KEY);
+  } catch {
+    // localStorage indisponível
+  }
+}
+
+function isLoginRequest(url: string): boolean {
+  return url.includes("/api/auth/login");
+}
+
+function authHeaders(url: string, hasBody: boolean): Record<string, string> {
+  const headers: Record<string, string> = {};
+  if (hasBody) headers["Content-Type"] = "application/json";
+  if (!isLoginRequest(url)) {
+    const token = getToken();
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+  }
+  return headers;
+}
+
+async function parseResponse<T>(res: Response): Promise<T> {
+  const text = await res.text();
+  let data: any = null;
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    data = null;
+  }
+
+  if (res.status === 401) {
+    clearToken();
+    if (!window.location.pathname.startsWith("/login")) {
+      window.location.href = "/login";
     }
+  }
+
+  if (!res.ok) {
+    throw new Error(data?.error || text || `Erro ${res.status}`);
+  }
+
+  return data as T;
+}
+
+export const api = {
+  get: async <T = any>(url: string): Promise<T> => {
+    const res = await fetch(url, { headers: authHeaders(url, false) });
+    return parseResponse<T>(res);
   },
-  post: async (url: string, data: any) => {
+  post: async <T = any>(url: string, data: any): Promise<T> => {
     const res = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: authHeaders(url, true),
       body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error(await res.text());
-    return res.json();
+    return parseResponse<T>(res);
   },
-  put: async (url: string, data: any) => {
+  put: async <T = any>(url: string, data: any): Promise<T> => {
     const res = await fetch(url, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: authHeaders(url, true),
       body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error(await res.text());
-    return res.json();
+    return parseResponse<T>(res);
   },
-  delete: async (url: string) => {
-    const res = await fetch(url, {
-      method: "DELETE",
-    });
-    if (!res.ok) throw new Error(await res.text());
-    return res.json();
+  delete: async <T = any>(url: string): Promise<T> => {
+    const res = await fetch(url, { method: "DELETE", headers: authHeaders(url, false) });
+    return parseResponse<T>(res);
   },
 };

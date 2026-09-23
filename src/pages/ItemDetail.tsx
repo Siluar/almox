@@ -6,8 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ChevronLeft, Package, History, AlertTriangle, ArrowUpRight, ArrowDownRight, Plus, ArrowLeftRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { cn } from "@/lib/utils";
+import { formatDbDate } from "@/lib/datetime";
 
 interface Item {
   id: number;
@@ -126,7 +126,7 @@ export default function ItemDetail() {
                 {movements.map((m) => (
                   <TableRow key={m.id} className="hover:bg-[#f8fafc] transition-colors border-b border-[#f1f5f9]">
                     <TableCell className="text-[13px] text-[#64748b] py-3">
-                      {format(new Date(m.date), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                      {formatDbDate(m.date, "dd/MM/yyyy HH:mm")}
                     </TableCell>
                     <TableCell>
                       <span className={cn(
@@ -205,8 +205,4 @@ export default function ItemDetail() {
 
     </div>
   );
-}
-
-function cn(...inputs: any[]) {
-  return inputs.filter(Boolean).join(" ");
 }

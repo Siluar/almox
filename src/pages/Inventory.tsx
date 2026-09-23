@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Pagination } from "@/components/ui/pagination";
 
 interface Item {
   id: number;
@@ -43,6 +44,8 @@ export default function Inventory() {
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
+  const [page, setPage] = useState(1);
+  const pageSize = 15;
 
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
 
@@ -70,6 +73,7 @@ export default function Inventory() {
       setItems(itemsData);
       setCategories(catsData);
       setSubcategories(subsData);
+      setPage(1);
     } catch (err) {
       toast.error("Erro ao carregar dados");
     } finally {
@@ -145,6 +149,10 @@ export default function Inventory() {
   const filteredSubcategories = subcategories.filter(s => 
     !selectedCategoryId || s.category_name === categories.find(c => c.id.toString() === selectedCategoryId)?.name
   );
+
+  const totalPages = Math.max(1, Math.ceil(filteredItems.length / pageSize));
+  const safePage = Math.min(page, totalPages);
+  const pagedItems = filteredItems.slice((safePage - 1) * pageSize, safePage * pageSize);
 
   return (
     <div className="space-y-6">
@@ -299,7 +307,10 @@ export default function Inventory() {
           placeholder="Buscar por código, nome, categoria ou subcategoria..." 
           className="pl-10 h-12 bg-white border-none shadow-sm rounded-xl"
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={e => {
+            setSearch(e.target.value);
+            setPage(1);
+          }}
         />
       </div>
 
@@ -316,7 +327,7 @@ export default function Inventory() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredItems.map((item) => (
+            {pagedItems.map((item) => (
               <TableRow key={item.id} className="hover:bg-[#f1f5f9] transition-colors border-b border-[#e2e8f0]">
                 <TableCell className="py-4 font-mono text-[12px] text-[#64748b]">
                   #{item.id.toString().padStart(4, '0')}
@@ -405,12 +416,9 @@ export default function Inventory() {
             )}
           </TableBody>
         </Table>
+        <Pagination page={safePage} pageSize={pageSize} total={filteredItems.length} onPageChange={setPage} />
       </div>
 
     </div>
   );
-}
-
-function cn(...inputs: any[]) {
-  return inputs.filter(Boolean).join(" ");
 }
